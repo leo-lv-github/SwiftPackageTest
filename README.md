@@ -1,2 +1,0 @@
-# SwiftPackageTest
-SwiftPackageTest
