@@ -1,0 +1,63 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.1 effective-5.10 (swiftlang-6.1.0.110.21 clang-1700.0.13.3)
+// swift-module-flags: -target x86_64-apple-ios16.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name HealthKitFramework
+// swift-module-flags-ignorable: -no-verify-emitted-module-interface -interface-compiler-version 6.1
+import CoreBluetooth
+@_exported import HealthKitFramework
+import Swift
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+public protocol ThermometerServiceDelegate {
+  func thermometerTemperatureCallback(temperature: Swift.Double, mode: Swift.Int, modeString: Swift.String)
+  func thermometerErrorCallback(error: Swift.Int, description: Swift.String)
+  func thermometerBatteryLevelCallback(type: Swift.Int, description: Swift.String)
+}
+public class ThermometerService {
+  public static let ThermometerServiceUUID: CoreBluetooth.CBUUID
+  public static let ThermometerNotifyCharacteristicUUID: CoreBluetooth.CBUUID
+  public static let ThermometerWriteCharacteristicUUID: CoreBluetooth.CBUUID
+  public static let queryBatteryLevelCommand: Foundation.Data
+  public var delegate: (any HealthKitFramework.ThermometerServiceDelegate)?
+  public func setPairedDevice(peripheral: CoreBluetooth.CBPeripheral, advertisementData: [Swift.String : Any]) -> (Swift.String, Swift.String, Swift.String)
+  public init()
+  public func isThermometer(peripheral: CoreBluetooth.CBPeripheral) -> Swift.Bool
+  public func parseThermometerData(peripheral: CoreBluetooth.CBPeripheral, characteristic: CoreBluetooth.CBCharacteristic)
+  public static func findCharacteristic(with uuid: CoreBluetooth.CBUUID, on peripheral: CoreBluetooth.CBPeripheral) -> CoreBluetooth.CBCharacteristic?
+  public static func findWriteCharacteristic(on peripheral: CoreBluetooth.CBPeripheral) -> CoreBluetooth.CBCharacteristic?
+  @objc deinit
+}
+public protocol OximeterServiceDelegate {
+  func oximeterBatteryCallback(batteryPercentage: Swift.Int, pulseData: Foundation.Data)
+  func oximeterMeasurementCallback(pulse: Swift.Int, spo2: Swift.Int, pi: Swift.Double)
+}
+public class OximeterService {
+  public static let OximeterServiceUUID: CoreBluetooth.CBUUID
+  public static let OximeterNotifyCharacteristicUUID: CoreBluetooth.CBUUID
+  public static let OximeterWriteCharacteristicUUID: CoreBluetooth.CBUUID
+  public var delegate: (any HealthKitFramework.OximeterServiceDelegate)?
+  public func setPairedDevice(peripheral: CoreBluetooth.CBPeripheral, advertisementData: [Swift.String : Any]) -> (Swift.String, Swift.String, Swift.String)
+  public init()
+  public func isOximeter(peripheral: CoreBluetooth.CBPeripheral) -> Swift.Bool
+  public func parseOximeterData(peripheral: CoreBluetooth.CBPeripheral, characteristic: CoreBluetooth.CBCharacteristic)
+  public static func findCharacteristic(with uuid: CoreBluetooth.CBUUID, on peripheral: CoreBluetooth.CBPeripheral) -> CoreBluetooth.CBCharacteristic?
+  public static func findWriteCharacteristic(on peripheral: CoreBluetooth.CBPeripheral) -> CoreBluetooth.CBCharacteristic?
+  @objc deinit
+}
+public protocol BloodPressureMonitorServiceDelegate {
+  func bloodPressureMonitorInstantDataCallback(pressure: Swift.Int, pulseStatus: Swift.Int)
+  func bloodPressureMonitorFinalDataCallback(systolic: Swift.Int, diastolic: Swift.Int, pulse: Swift.Int, irregularPulse: Swift.Int)
+}
+public class BloodPressureMonitorService {
+  public static let BloodPressureMonitorServiceUUID: CoreBluetooth.CBUUID
+  public static let BloodPressureMonitorNotifyCharacteristicUUID: CoreBluetooth.CBUUID
+  public static let BloodPressureMonitorWriteCharacteristicUUID: CoreBluetooth.CBUUID
+  public var delegate: (any HealthKitFramework.BloodPressureMonitorServiceDelegate)?
+  public func setPairedDevice(peripheral: CoreBluetooth.CBPeripheral, advertisementData: [Swift.String : Any]) -> (Swift.String, Swift.String, Swift.String)
+  public init()
+  public func isBloodPressureMonitor(peripheral: CoreBluetooth.CBPeripheral) -> Swift.Bool
+  public func parseBloodPressureMonitorData(peripheral: CoreBluetooth.CBPeripheral, characteristic: CoreBluetooth.CBCharacteristic)
+  public static func findCharacteristic(with uuid: CoreBluetooth.CBUUID, on peripheral: CoreBluetooth.CBPeripheral) -> CoreBluetooth.CBCharacteristic?
+  public static func findWriteCharacteristic(on peripheral: CoreBluetooth.CBPeripheral) -> CoreBluetooth.CBCharacteristic?
+  @objc deinit
+}

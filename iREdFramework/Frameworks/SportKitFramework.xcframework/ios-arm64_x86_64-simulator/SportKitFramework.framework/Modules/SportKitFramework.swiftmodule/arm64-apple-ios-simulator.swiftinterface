@@ -1,0 +1,57 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.1 effective-5.10 (swiftlang-6.1.0.110.21 clang-1700.0.13.3)
+// swift-module-flags: -target arm64-apple-ios16.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name SportKitFramework
+// swift-module-flags-ignorable: -no-verify-emitted-module-interface -interface-compiler-version 6.1
+import CoreBluetooth
+@_exported import SportKitFramework
+import Swift
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+public protocol HeartrateProfileDelegate {
+  func HeartRateCallback(heartrate: Swift.Int)
+  func HeartRateProfileBatteryLevelCallback(batteryLevel: Swift.Int)
+}
+public class HeartrateProfile {
+  public static let HeartrateServiceUUID: CoreBluetooth.CBUUID
+  public static let HeartrateServiceNotifyCharacteristicUUID: CoreBluetooth.CBUUID
+  public static let BatteryServiceUUID: CoreBluetooth.CBUUID
+  public static let BatteryServiceCharacteristicUUID: CoreBluetooth.CBUUID
+  public var delegate: (any SportKitFramework.HeartrateProfileDelegate)?
+  public func setPairedDevice(peripheral: CoreBluetooth.CBPeripheral, advertisementData: [Swift.String : Any]) -> (Swift.String, Swift.String, Swift.String)
+  public init()
+  public func isHeartRateProfile(peripheral: CoreBluetooth.CBPeripheral) -> Swift.Bool
+  public func parseHeartRateProfileData(peripheral: CoreBluetooth.CBPeripheral, characteristic: CoreBluetooth.CBCharacteristic)
+  public func readBatteryLevel(peripheral: CoreBluetooth.CBPeripheral)
+  public func stopCurrentMode(peripheral: CoreBluetooth.CBPeripheral)
+  @objc deinit
+}
+public protocol ScaleServiceDelegate {
+  func scaleWeightCallback(weight: Swift.Double, isFinalResult: Swift.Bool)
+}
+public class ScaleService {
+  public var delegate: (any SportKitFramework.ScaleServiceDelegate)?
+  public func setPairedDevice(peripheral: CoreBluetooth.CBPeripheral, advertisementData: [Swift.String : Any]) -> (Swift.String, Swift.String, Swift.String)
+  public init()
+  public func isScale(peripheral: CoreBluetooth.CBPeripheral) -> Swift.Bool
+  public func parseWeightData(peripheral: CoreBluetooth.CBPeripheral, advertisementData: [Swift.String : Any])
+  @objc deinit
+}
+public protocol JumpRopeServiceDelegate {
+  func jumpRopeStatusCallback(mode: Swift.Int, status: Swift.Int, setting: Swift.Int, count: Swift.Int, time: Swift.Int, screen: Swift.Int, battery: Swift.Int)
+}
+public class JumpRopeService {
+  public static let JumpRopeServiceUUID: CoreBluetooth.CBUUID
+  public static let JumpRopeNotifyCharacteristicUUID: CoreBluetooth.CBUUID
+  public static let JumpRopeWriteCharacteristicUUID: CoreBluetooth.CBUUID
+  public static let queryBatteryLevelCommand: Foundation.Data
+  public var delegate: (any SportKitFramework.JumpRopeServiceDelegate)?
+  public func setPairedDevice(peripheral: CoreBluetooth.CBPeripheral, advertisementData: [Swift.String : Any]) -> (Swift.String, Swift.String, Swift.String)
+  public init()
+  public func isJumpRope(peripheral: CoreBluetooth.CBPeripheral) -> Swift.Bool
+  public func parseJumpRopeData(peripheral: CoreBluetooth.CBPeripheral, characteristic: CoreBluetooth.CBCharacteristic)
+  public func setMode(peripheral: CoreBluetooth.CBPeripheral, mode: Swift.Int, setting: Swift.Int)
+  public func stopCurrentMode(peripheral: CoreBluetooth.CBPeripheral)
+  public func sendMeasurementDataReceived(peripheral: CoreBluetooth.CBPeripheral)
+  @objc deinit
+}

@@ -1,0 +1,11 @@
+framework module SportKitFramework {
+  umbrella header "SportKitFramework.h"
+  export *
+
+  module * { export * }
+}
+
+module SportKitFramework.Swift {
+  header "SportKitFramework-Swift.h"
+  requires objc
+}

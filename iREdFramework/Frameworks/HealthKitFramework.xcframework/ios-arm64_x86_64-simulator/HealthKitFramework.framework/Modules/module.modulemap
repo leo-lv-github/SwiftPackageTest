@@ -1,0 +1,11 @@
+framework module HealthKitFramework {
+  umbrella header "HealthKitFramework.h"
+  export *
+
+  module * { export * }
+}
+
+module HealthKitFramework.Swift {
+  header "HealthKitFramework-Swift.h"
+  requires objc
+}
