@@ -165,13 +165,13 @@ public struct HealthKitThermometerModel {
     public var modeCode: Int? = nil
     public var modeDescription: String? = nil
     
-    public static let empty = HealthKitThermometerModel()
+    @MainActor public static let empty = HealthKitThermometerModel()
 }
 public struct HealthKitThermometerData {
     public var state: DeviceStatusModel = DeviceStatusModel()
     public var data: HealthKitThermometerModel = HealthKitThermometerModel()
     
-    public static let empty = HealthKitThermometerData()
+    @MainActor public static let empty = HealthKitThermometerData()
 }
 
 
@@ -194,7 +194,7 @@ public struct HealthKitOximeterModel {
     public var resultPI: String? = nil
     public var PlethysmographyArray: [Int] = []
     
-    public static let empty = HealthKitOximeterModel()
+    @MainActor public static let empty = HealthKitOximeterModel()
     
     public func averageSpo2() -> Int {
         // 非正常测量数据Error: 如果测量时，无手指，数据可能为，程序可能会Quit
@@ -228,7 +228,7 @@ public struct HealthKitOximeterData {
     public var state: DeviceStatusModel = DeviceStatusModel()
     public var data: HealthKitOximeterModel = HealthKitOximeterModel()
     
-    public static let empty = HealthKitOximeterData()
+    @MainActor public static let empty = HealthKitOximeterData()
 }
 
 public struct HealthKitSphygmometerModel {
@@ -240,13 +240,13 @@ public struct HealthKitSphygmometerModel {
     public var pulse: Int? = nil
     public var irregularPulse: Int? = nil
     
-    public static let empty = HealthKitSphygmometerModel()
+    @MainActor public static let empty = HealthKitSphygmometerModel()
 }
 public struct HealthKitSphygmometerData {
     public var state: DeviceStatusModel = DeviceStatusModel()
     public var data: HealthKitSphygmometerModel = HealthKitSphygmometerModel()
     
-    public static let empty = HealthKitSphygmometerData()
+    @MainActor public static let empty = HealthKitSphygmometerData()
 }
 
 public struct HealthKitScaleModel {
@@ -297,13 +297,13 @@ public struct HealthKitScaleModel {
         }
     }
     
-    public static let empty = HealthKitScaleModel()
+    @MainActor public static let empty = HealthKitScaleModel()
 }
 public struct HealthKitScalerData {
     public var state: DeviceStatusModel = DeviceStatusModel()
     public var data: HealthKitScaleModel = HealthKitScaleModel()
     
-    public static let empty = HealthKitScalerData()
+    @MainActor public static let empty = HealthKitScalerData()
 }
 
 
@@ -342,7 +342,7 @@ public struct JumpRopeModel: Equatable {
     public var batteryLevel: Int? = nil
     
     /// 空模型，用于初始化或清空状态
-    public static let empty = JumpRopeModel()
+    @MainActor public static let empty = JumpRopeModel()
     
     /// 返回模式对应的字符串（Free / Time / Count）
     public func modeString() -> String {
@@ -380,11 +380,12 @@ public struct JumpRopeArrayModel: Identifiable, Equatable {
     public let date: Date
     public let count: Int
 }
+
 public struct JumpRopeData: Equatable {
     public var state: DeviceStatusModel = DeviceStatusModel()
     public var data: JumpRopeModel = JumpRopeModel()
     
-    public static let empty = JumpRopeData()
+    @MainActor public static let empty = JumpRopeData()
 }
 
 /// 心率带数据模型，用于记录当前心率、设备信息、电量及历史记录
@@ -432,7 +433,7 @@ public struct HeartRateBeltModel: Equatable {
     }
 
     /// 空模型初始化（默认值）
-    static let empty = HeartRateBeltModel()
+    @MainActor static let empty = HeartRateBeltModel()
 }
 public struct HeartRateBeltArrayModel: Equatable {
     var date: Date = Date()
@@ -442,7 +443,7 @@ public struct HeartRateBeltData: Equatable {
     public var state: DeviceStatusModel = DeviceStatusModel()
     public var data: HeartRateBeltModel = HeartRateBeltModel()
     
-    public static let empty = HeartRateBeltData()
+    @MainActor public static let empty = HeartRateBeltData()
 }
 
 
@@ -493,7 +494,7 @@ public struct ThermometerModel: Decodable {
     public let datetime: String
     public let user: String
     
-    static let error = ThermometerModel(temperature: -1, mode: "Error", datetime: "", user: "Error")
+    @MainActor static let error = ThermometerModel(temperature: -1, mode: "Error", datetime: "", user: "Error")
 }
 
 public struct RopeModel: Decodable {

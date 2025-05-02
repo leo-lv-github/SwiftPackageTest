@@ -65,8 +65,9 @@ public struct PairedDeviceModel: Codable {
 }
 
 // MARK: MAIN Method
-public final class iREdBluetooth: NSObject, ObservableObject {
-    static let shared = iREdBluetooth()
+@MainActor
+public final class iREdBluetooth: NSObject, ObservableObject, Sendable {
+    @MainActor static let shared = iREdBluetooth()
     
     // Delegates
     private weak var hkDelegate: HealthKitDelegate?
@@ -150,7 +151,7 @@ public final class iREdBluetooth: NSObject, ObservableObject {
     }
     
     // Start pairing
-    public func startPairing(to deviceType: iREdBluetoothDeviceType) {
+    @MainActor public func startPairing(to deviceType: iREdBluetoothDeviceType) {
         switch deviceType {
         case .thermometer:
             iredDeviceData.thermometerData = .empty
@@ -237,7 +238,7 @@ public final class iREdBluetooth: NSObject, ObservableObject {
         }
     }
     
-    public func connect(from deviceType: iREdBluetoothDeviceType) {
+    @MainActor public func connect(from deviceType: iREdBluetoothDeviceType) {
         switch deviceType {
         case .thermometer:
             if let lastPairedThermometer, !iredDeviceData.thermometerData.state.isConnected {
@@ -278,7 +279,7 @@ public final class iREdBluetooth: NSObject, ObservableObject {
         }
     }
     
-    public func connect(byUUIDString uuid: String) {
+    @MainActor public func connect(byUUIDString uuid: String) {
         currentUUIDString = uuid
         startPairing(to: .all_ired_devices)
         //        centralManager?.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
@@ -328,7 +329,7 @@ public final class iREdBluetooth: NSObject, ObservableObject {
 }
 
 // MARK: CBCentralManagerDelegate
-extension iREdBluetooth: CBCentralManagerDelegate {
+extension iREdBluetooth: @preconcurrency CBCentralManagerDelegate {
     public func centralManagerDidUpdateState(_ central: CBCentralManager) {
         switch central.state {
         case .unknown:
@@ -354,9 +355,9 @@ extension iREdBluetooth: CBCentralManagerDelegate {
 }
 
 // MARK: CBPeripheralDelegate
-extension iREdBluetooth: CBPeripheralDelegate {
+extension iREdBluetooth: @preconcurrency CBPeripheralDelegate {
     // MARK: Discover devices
-    public func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
+    @MainActor public func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
         guard let name = peripheral.name else { return } // The name is required for the ired Bluetooth device
         let deviceType: iREdBluetoothDeviceType = deviceTypeByPeripheralName(name)
         if currentDeviceType != deviceType && currentDeviceType != .all_ired_devices { return } // Pair only the current device type to avoid filtering all devices
@@ -420,8 +421,8 @@ extension iREdBluetooth: CBPeripheralDelegate {
                 lastPairedSphygmometer = PairedDeviceModel(uuidString: uuid, name: deviceName, macAddress: macAddress)
                 stopPairing()
             case .scale:
-//                guard let data = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data else { return }
-//                guard let macAddress = extractMacAddress(from: data, offset: 2) else { return }
+                //                guard let data = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data else { return }
+                //                guard let macAddress = extractMacAddress(from: data, offset: 2) else { return }
                 let (uuidString, deviceName, macAddress) = scaleService.setPairedDevice(peripheral: peripheral, advertisementData: advertisementData)
                 if uuidString.isEmpty { return }
                 iredDeviceData.scaleData.state.isPairing = false
@@ -467,7 +468,7 @@ extension iREdBluetooth: CBPeripheralDelegate {
     }
     
     // MARK: Connect devices
-    public func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+    @MainActor public func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         connectingLoadingAlert?.dismiss(animated: true, completion: {
             self.connectingLoadingAlert = nil
         })
@@ -525,7 +526,7 @@ extension iREdBluetooth: CBPeripheralDelegate {
     }
     
     // connection failed
-    public func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
+    @MainActor public func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         connectingLoadingAlert?.dismiss(animated: true, completion: {
             self.connectingLoadingAlert = nil
         })
@@ -553,7 +554,7 @@ extension iREdBluetooth: CBPeripheralDelegate {
     }
     
     // MARK: Disconnect devices
-    public func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+    @MainActor public func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         guard let name = peripheral.name else { return }
         guard let device = devices.filter({ $0.peripheral.identifier.uuidString == peripheral.identifier.uuidString }).first else { return }
         /// print("disconnect: \(name)")
@@ -724,7 +725,7 @@ extension iREdBluetooth: CBPeripheralDelegate {
 
 // Callbacks
 // MARK: Scale
-extension iREdBluetooth: SportKitFramework.ScaleServiceDelegate {
+extension iREdBluetooth: @preconcurrency SportKitFramework.ScaleServiceDelegate {
     public func scaleWeightCallback(weight: Double, isFinalResult: Bool) {
         hkDelegate?.scaleCallback(callback: .weight(weight: weight, isFinalResult: isFinalResult))
         skDelegate?.scaleCallback(callback: .weight(weight: weight, isFinalResult: isFinalResult))
@@ -740,7 +741,7 @@ extension iREdBluetooth: SportKitFramework.ScaleServiceDelegate {
 }
 
 // MARK: Thermometer
-extension iREdBluetooth: ThermometerServiceDelegate {
+extension iREdBluetooth: @preconcurrency ThermometerServiceDelegate {
     public func thermometerTemperatureCallback(temperature: Double, mode: Int, modeString: String) {
         hkDelegate?.thermometerCallback(callback: .temperature(temperature: temperature, mode: mode, modeString: modeString))
         iredDeviceData.thermometerData.state.isConnected = true
@@ -757,7 +758,7 @@ extension iREdBluetooth: ThermometerServiceDelegate {
         iredDeviceData.thermometerData.state.isMeasurementError = MeasurementError(errorCode: error, errorDescription: description)
     }
     
-    public func thermometerBatteryLevelCallback(type: Int, description: String) {
+    @MainActor public func thermometerBatteryLevelCallback(type: Int, description: String) {
         hkDelegate?.thermometerCallback(callback: .battery(type: type, description: description))
         iredDeviceData.thermometerData.data = .empty
         iredDeviceData.thermometerData.state.isConnected = true
@@ -766,7 +767,7 @@ extension iREdBluetooth: ThermometerServiceDelegate {
 }
 
 // MARK: Oximeter
-extension iREdBluetooth: OximeterServiceDelegate {
+extension iREdBluetooth: @preconcurrency OximeterServiceDelegate {
     public func oximeterBatteryCallback(batteryPercentage: Int, pulseData: Data) {
         hkDelegate?.oximeterCallback(callback: .battery(batteryPercentage: batteryPercentage, pulseData: pulseData))
         iredDeviceData.oximeterData.data.battery = batteryPercentage
@@ -872,7 +873,7 @@ extension iREdBluetooth {
 }
 
 // MARK: Sphygmometer
-extension iREdBluetooth: BloodPressureMonitorServiceDelegate {
+extension iREdBluetooth: @preconcurrency BloodPressureMonitorServiceDelegate {
     public func bloodPressureMonitorInstantDataCallback(pressure: Int, pulseStatus: Int) {
         hkDelegate?.sphygmometerCallback(callback: .instantData(pressure: pressure, pulseStatus: pulseStatus))
         iredDeviceData.sphygmometerData.data.pressure = pressure
@@ -895,8 +896,8 @@ extension iREdBluetooth: BloodPressureMonitorServiceDelegate {
 }
 
 // MARK: JumpRope
-extension iREdBluetooth: JumpRopeServiceDelegate {
-    public func jumpRopeStatusCallback(mode: Int, status: Int, setting: Int, count: Int, time: Int, screen: Int, battery: Int) {
+extension iREdBluetooth: @preconcurrency JumpRopeServiceDelegate {
+    @MainActor public func jumpRopeStatusCallback(mode: Int, status: Int, setting: Int, count: Int, time: Int, screen: Int, battery: Int) {
         if iredDeviceData.jumpRopeData.state.isMeasuring {
             iredDeviceData.jumpRopeData.data.count = count
             iredDeviceData.jumpRopeData.data.time = time
@@ -989,7 +990,7 @@ extension iREdBluetooth {
      */
 }
 extension iREdBluetooth {
-    private static var jumpRopeTimer: Timer?
+    @MainActor private static var jumpRopeTimer: Timer?
     
     enum JumpRopeError: LocalizedError {
         case invalidTime
@@ -1050,11 +1051,13 @@ extension iREdBluetooth {
             self.iredDeviceData.jumpRopeData.state.isMeasuring = true
             Self.jumpRopeTimer?.invalidate()
             Self.jumpRopeTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-                guard self.iredDeviceData.jumpRopeData.state.isMeasuring,
-                      let currentCount = self.iredDeviceData.jumpRopeData.data.count else { return }
-                
-                let item = JumpRopeArrayModel(date: Date(), count: currentCount)
-                self.iredDeviceData.jumpRopeData.data.countArray.append(item)
+                Task { @MainActor in
+                    guard self.iredDeviceData.jumpRopeData.state.isMeasuring,
+                          let currentCount = self.iredDeviceData.jumpRopeData.data.count else { return }
+                    
+                    let item = JumpRopeArrayModel(date: Date(), count: currentCount)
+                    self.iredDeviceData.jumpRopeData.data.countArray.append(item)
+                }
             }
             
             // 成功后返回 success
@@ -1062,7 +1065,7 @@ extension iREdBluetooth {
         }
     }
     /// 停止跳绳记录
-    public func stopJumpRopeRecording() {
+    @MainActor public func stopJumpRopeRecording() {
         print(#function, "停止跳绳记录")
         Self.jumpRopeTimer?.invalidate()
         Self.jumpRopeTimer = nil
@@ -1079,7 +1082,7 @@ extension iREdBluetooth {
 }
 
 // MARK: Heart Rate Belt
-extension iREdBluetooth: HeartrateProfileDelegate {
+extension iREdBluetooth: @preconcurrency HeartrateProfileDelegate {
     public func HeartRateCallback(heartrate: Int) {
         iredDeviceData.heartRateData.data.heartrate = heartrate
         skDelegate?.heartRateCallback(callback: .heartrate(heartrate: heartrate))
@@ -1091,7 +1094,7 @@ extension iREdBluetooth: HeartrateProfileDelegate {
     }
 }
 extension iREdBluetooth {
-    private static var heartRateTimer: Timer?
+    @MainActor private static var heartRateTimer: Timer?
     
     /// 开始心率记录
     ///
@@ -1100,7 +1103,7 @@ extension iREdBluetooth {
     /// 每条数据包含心率值和记录时间。
     ///
     /// 使用前应确保已有有效的心率值（`heartrate`）。
-    public func startHeartRateRecording() {
+    @MainActor public func startHeartRateRecording() {
         self.iredDeviceData.heartRateData.data.heartrateArray = [] // 清空历史数据
         // 标记正在测量
         iredDeviceData.heartRateData.state.isMeasuring = true
@@ -1109,20 +1112,22 @@ extension iREdBluetooth {
         
         // 每秒记录一次心率
         Self.heartRateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            guard self.iredDeviceData.heartRateData.state.isMeasuring,
-                  let currentHR = self.iredDeviceData.heartRateData.data.heartrate else { return }
-            
-            // 记录当前心率数据与时间
-            let item = HeartRateBeltArrayModel(date: Date(), heartrate: currentHR)
-            self.iredDeviceData.heartRateData.data.heartrateArray.append(item)
+            Task { @MainActor in
+                guard self.iredDeviceData.heartRateData.state.isMeasuring,
+                      let currentHR = self.iredDeviceData.heartRateData.data.heartrate else { return }
+                
+                let item = HeartRateBeltArrayModel(date: Date(), heartrate: currentHR)
+                self.iredDeviceData.heartRateData.data.heartrateArray.append(item)
+            }
         }
+        
     }
     
     /// 停止心率记录
     ///
     /// 此函数会停止并释放定时器，
     /// 并设置状态标记 `isMeasuring = false`，`isMeasurementCompleted = true`。
-    public func stopHeartRateRecording() {
+    @MainActor public func stopHeartRateRecording() {
         // print(#function, "停止心跳记录")
         // 停止定时器
         Self.heartRateTimer?.invalidate()
