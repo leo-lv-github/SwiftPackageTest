@@ -67,7 +67,7 @@ public struct PairedDeviceModel: Codable {
 // MARK: MAIN Method
 @MainActor
 public final class iREdBluetooth: NSObject, ObservableObject, Sendable {
-    @MainActor static let shared = iREdBluetooth()
+    @MainActor public static let shared = iREdBluetooth()
     
     // Delegates
     private weak var hkDelegate: HealthKitDelegate?
